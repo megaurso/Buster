@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView, Response, Request, status
 from users.models import User
+from django.contrib.auth import authenticate
 from users.serializers import UserSerializer
 
 

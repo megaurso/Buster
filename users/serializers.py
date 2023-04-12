@@ -13,7 +13,7 @@ class UserSerializer(serializers.Serializer):
     is_employee = serializers.BooleanField(allow_null=True, default=False)
     is_superuser = serializers.BooleanField(read_only=True)
 
-    def validate_username(self,value):
+    def validate_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("username already taken.")
         return value
@@ -22,8 +22,7 @@ class UserSerializer(serializers.Serializer):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("email already registered.")
         return value
-    
-    
+
     def create(self, validated_data: dict) -> User:
         is_employee = validated_data.get("is_employee", False)
         if is_employee:
