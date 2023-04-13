@@ -1,10 +1,11 @@
 from rest_framework.views import APIView, Response, Request, status
 from movies.models import Movie
-from movies.serializer import MovieSerializer
+from movies.serializer import MovieSerializer, PurchaseMovieSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import (
     BasePermission,
     IsAdminUser,
+    IsAuthenticated
 )
 from users.models import User
 from django.shortcuts import get_object_or_404
@@ -15,7 +16,6 @@ class RequestPermission(BasePermission):
         if req.method in ["POST", "DELETE"]:
             return bool(req.user.is_authenticated and req.user.is_superuser)
         return True
-
 
 class MovieView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -36,7 +36,6 @@ class MovieView(APIView):
 
         return Response(serializer.data, status.HTTP_201_CREATED)
 
-
 class MovieInfoView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [RequestPermission]
@@ -50,3 +49,16 @@ class MovieInfoView(APIView):
         movie = get_object_or_404(Movie, id=movie_id)
         movie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class PurchaseMovie(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, req: Request, movie_id) -> Response:
+        movie = get_object_or_404(Movie, id=movie_id)
+
+        serializer = PurchaseMovieSerializer(data=req.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(movie=movie, user=req.user)
+
+        return Response(serializer.data, status.HTTP_201_CREATED)
